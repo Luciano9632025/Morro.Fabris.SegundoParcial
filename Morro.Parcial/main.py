@@ -423,16 +423,3 @@ jugar_encontrar_palabra()
 
 
 
-#############################
-
-'''  
-○ calcular_puntuacion_parcial(): calculará y actualizará el puntaje basado en 
-aciertos y errores en una partida.  
-○ verificar_estado_juego(): determinará si el jugador ganó o no la partida.  
-○ calcular_puntuacion_final(): calculará y actualizará el puntaje basado en los 
-puntajes parciales de cada partida. 
-○ guardar_puntuacion(): guardará el nombre del jugador, junto con la 
-puntuación total y la fecha, en un archivo csv. '''
-
-
-
