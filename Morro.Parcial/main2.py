@@ -115,20 +115,21 @@ def jugar_una_partida():
                 print("No hay letras descartables.")
                 continue
 
-        else:
-            letrai = entrada
+         else:
             palabra_oculta, aciertos, fallos = actualizar_palabra_oculta(
                 palabra,
                 palabra_oculta,
-                letrai
-            )
-            puntaje_partida = puntaje_partida + puntaje_obtenido(aciertos, fallos)
-            if aciertos == 0:
-                errores_partida = errores_partida + 1
-                print("Incorrecto.")
-            else:
-                letras_reveladas.append(letrai)
-                print("Correcto.")
+                entrada   
+        )
+
+    puntaje_partida = puntaje_partida + puntaje_obtenido(aciertos, fallos)
+
+    if aciertos == 0:
+        errores_partida = errores_partida + 1
+        print("Incorrecto.")
+    else:
+        letras_reveladas.append(entrada)
+        print("Correcto.")
 
 def jugar_un_nivel(nivel, reinicios):
     print("\n──────────────────────────")
