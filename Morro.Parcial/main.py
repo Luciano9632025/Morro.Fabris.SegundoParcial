@@ -59,8 +59,8 @@ max_intentos = 7
 
 def obtener_lista_palabras() -> list:
     lista_palabras = []
-    for clave in diccionario:
-        for palabra in diccionario[clave]:
+    for clave in diccionario2:
+        for palabra in diccionario2[clave]:
             lista_palabras.append(palabra)
 
     return lista_palabras
@@ -144,6 +144,12 @@ def mostrar_palabra_oculta(palabra, letras_correctas):
     return palabra_oculta
 
 
+def mostrar_palabras_ocultas(diccionario2, categoria, letras_correctas):
+    for palabra in diccionario2[categoria]:
+        mostrar_palabra_oculta(palabra, letras_correctas)
+        print()
+
+
 def actualizar_palabra_oculta(palabra, palabra_oculta, letra):
     aciertos = 0
     fallos = 0
@@ -157,6 +163,26 @@ def actualizar_palabra_oculta(palabra, palabra_oculta, letra):
         fallos = 1
 
     return palabra_oculta, aciertos, fallos
+
+
+def ingresar_palabra_oculta(palabra, palabra_oculta, letra):
+    for i in range (len(palabra)):
+        palabra_oculta[i] = letra
+
+    return palabra_oculta
+
+
+def submit(palabra_formada, palabras_validas, puntaje, errores):
+    if palabra_formada not in palabras_validas: 
+        print("La palabra no existe entre las permitidas.")
+        errores += 1
+
+    puntos = len(palabra_formada)
+    print(f"✔ ¡Correcto! +{puntos} puntos.")
+    puntaje += puntos
+
+    return puntaje, errores, True
+
 
 
 def calcular_puntuacion_parcial(aciertos, fallos): 
@@ -239,64 +265,123 @@ def desordenar_cadena(cadena: str) -> str:
 
 
 
+#COMODINES
+def revelar_letra_aleatoria(palabra_oculta, palabra):
+    posiciones = []
+    for i in range(len(palabra)):
+        if palabra_oculta[i] == "_":
+            posiciones.append(i)
 
-def calcular_puntaje_acumulado():
-    print()
+    if len(posiciones) > 0:
+        posicion = random.choice(posiciones)
+        palabra_oculta[posicion] = palabra[posicion]
 
-def calcular_errores_cometidos():
-    pass
+    return palabra_oculta
 
-def calcular_cantidad_tiempo_restante():
-    #se incluye???
-    pass
+def aplicar_comodin_ubicar_letra(palabras_pendientes):
+    letras_posibles = "abcdefghijklmnopqrstuvwxyz"
+    letra_elegida = random.choice(letras_posibles)
+
+    for palabra, palabra_oculta in palabras_pendientes:
+        for i in range(len(palabra)):
+            if palabra[i] == letra_elegida:
+                palabra_oculta[i] = letra_elegida
+
+    return letra_elegida
+
+def descartar_letra_incorrecta(palabra, letras_usadas):
+    letras_posibles = "abcdefghijklmnopqrstuvwxyz"
+    letras_descartables = []
+    retornar = ""
+
+    for letra in letras_posibles:
+        if letra not in palabra and letra not in letras_usadas:
+            letras_descartables.append(letra)
+
+    if len(letras_descartables) > 0:
+        retornar = random.choice(letras_descartables)
+
+    return retornar
+
+
+def iniciar_partida(diccionario, max_intentos):
+    palabra = convertir_a_minuscula(seleccionar_palabra(diccionario))
+    letras_correctas = []
+    palabra_oculta = mostrar_palabra_oculta(palabra, letras_correctas)
+    lista_palabras = obtener_lista_palabras()
+    letras_desordenadas = desordenar_cadena(palabra)
+    
+    print(f"\nNueva partida. La palabra tiene {len(palabra)} letras.")
+    print(f"Letras desordenadas: {letras_desordenadas}")
+    
+    return palabra, letras_correctas, palabra_oculta, lista_palabras, max_intentos
+
+
+def procesar_palabra_ingresada(palabra_formada, palabra, letras_correctas, lista_palabras):
+    errores = 0
+    puntaje = 0
+    
+    if palabra_formada not in lista_palabras:
+        print("La palabra no existe entre las permitidas.")
+        errores = 1
+    else:
+        print(f"✔ ¡Correcto! +{len(palabra_formada)} puntos.")
+        puntaje = len(palabra_formada)
+        for letra in palabra_formada:
+            if buscar_caracter_valido(letra, palabra) and letra not in letras_correctas:
+                letras_correctas.append(letra)
+    
+    palabra_oculta = mostrar_palabra_oculta(palabra, letras_correctas)
+    return palabra_oculta, letras_correctas, puntaje, errores
+
+
+def verificar_partida(palabra_oculta, intentos_restantes, palabra):
+    if "_" not in palabra_oculta:
+        print(f"¡Ganaste la partida! La palabra era: {palabra}")
+        return "ganada"
+    elif intentos_restantes <= 0:
+        print(f"Se acabaron los intentos. La palabra era '{palabra}'.")
+        return "perdida"
+    return "jugando"
 
 
 def jugar_partida(puntaje, reinicios_restantes):
-    palabra = seleccionar_palabra(diccionario)
-    letras_correctas = []
-    intentos_restantes = max_intentos
+    palabra, letras_correctas, palabra_oculta, lista_palabras, intentos_restantes = iniciar_partida(diccionario2, max_intentos)
     errores = 0
-
-    print(f"\nNueva partida. La palabra tiene {len(palabra)} letras.")
-
-    palabra_oculta = mostrar_palabra_oculta(palabra, letras_correctas)
+    exito = False  # indica si la partida terminó ganada o no
 
     while True:
-        if intentos_restantes <= 0:
-            print(f"Se acabaron los intentos. La palabra era '{palabra}'.")
+        estado = verificar_partida(palabra_oculta, intentos_restantes, palabra)
+
+        if estado == "ganada":
+            exito = True
+            break
+        elif estado == "perdida":
             if reinicios_restantes > 0:
                 print(f"Reiniciando partida. Reinicios restantes: {reinicios_restantes - 1}")
                 reinicios_restantes -= 1
-                return jugar_partida(puntaje, reinicios_restantes)
+                # reiniciamos la partida sin recursión
+                palabra, letras_correctas, palabra_oculta, lista_palabras, intentos_restantes = iniciar_partida(diccionario2, max_intentos)
+                errores = 0
+                continue
             else:
                 print("Sin reinicios disponibles. Partida perdida.")
-                return puntaje, errores, False, reinicios_restantes
+                exito = False
+                break
 
-        if "_" not in palabra_oculta:
-            print(f"¡Ganaste la partida! La palabra era: {palabra}")
-            return puntaje, errores, True, reinicios_restantes
+        palabra_formada = input("Ingresa una palabra formada con las letras: ")
+        palabra_formada = convertir_a_minuscula(palabra_formada)
 
-        letra = input("Ingresa una palabra: ")
-        letra = convertir_a_minuscula(letra)
+        palabra_oculta, letras_correctas, puntos_obtenidos, errores_partida = procesar_palabra_ingresada(
+            palabra_formada, palabra, letras_correctas, lista_palabras
+        )
 
-        palabra_oculta, aciertos, fallos = actualizar_palabra_oculta(palabra, palabra_oculta, letra)
+        puntaje += puntos_obtenidos
+        errores += errores_partida
+        intentos_restantes -= errores_partida
 
-        if aciertos > 0 and letra not in letras_correctas:
-            letras_correctas.append(letra)
-            print("¡Acierto!")
-        else:
-            intentos_restantes -= 1
-            errores += 1
-            print(f"Error. Te quedan {intentos_restantes} intentos.")
-
-        puntaje = calcular_puntuacion_final(puntaje, aciertos, fallos)
-        mostrar_palabra_oculta(palabra, letras_correctas)
-
-
-puntaje = 5
-reinicios_restantes = 5
-
-jugar_partida(puntaje, reinicios_restantes)
+    return puntaje, errores, exito, reinicios_restantes
+        
 
 
 def jugar_nivel(nivel, puntaje, reinicios_restantes):
@@ -320,12 +405,21 @@ def jugar_nivel(nivel, puntaje, reinicios_restantes):
 
 
 nivel = 2
-jugar_nivel(nivel, puntaje, reinicios_restantes)
+puntaje = 0
+reinicios_restantes = 5
+#jugar_nivel(nivel, puntaje, reinicios_restantes)
 
 
 def jugar_encontrar_palabra():
-    pass
+    i = 1
+    puntaje = 0
+    reinicios_restantes = 5
+    while i < 2:
+        jugar_nivel(i, puntaje, reinicios_restantes)
+        i += 1
 
+
+jugar_encontrar_palabra()
 
 
 
@@ -341,195 +435,4 @@ puntajes parciales de cada partida.
 puntuación total y la fecha, en un archivo csv. '''
 
 
-import random
-from diccionario import *
-from datos import *
-
-
-def obtener_lista_palabras() -> list:
-    lista_palabras = []
-    for clave in diccionario:
-        for palabra in diccionario[clave]:
-            lista_palabras.append(palabra)
-
-    return lista_palabras
-
-
-def buscar_caracter_valido(caracter, caracteres_validos):
-    encontro = False
-    for j in range(len(caracteres_validos)):
-        if caracter == caracteres_validos[j]:
-            encontro = True
-            break
-    
-    return encontro
-
-
-def convertir_a_minuscula(cadena):
-    mayusculas = "ABCDEFGHIJKLMNÑOPQRSTUVWXYZ"  #comprende ñ
-    cadena_convertida = "" 
-    for caracter in cadena:
-        letra_minuscula = caracter
-        if buscar_caracter_valido(caracter, mayusculas):
-            letra_minuscula = chr(ord(caracter) + 32)
-        cadena_convertida += letra_minuscula
-
-    return cadena_convertida
-
-
-def obtener_elemento_aleatorio(lista_elementos)->any:
-    elemento = random.choice(lista_elementos)
-
-    return elemento
-
-
-def seleccionar_palabra(diccionario):
-    clave = seleccionar_categoria(diccionario)
-    palabra = random.choice(diccionario[clave])
-    palabra = convertir_a_minuscula(palabra)
-    return palabra
-
-
-def seleccionar_categoria(lista_palabras):
-    palabra = random.choice(list(lista_palabras))
-
-    return palabra
-
-
-def validar_longitud(cadena: str, minimo_len: int, maximo_len: int) -> bool:
-    es_valida = False
-    if len(cadena) >= minimo_len and len(cadena) <= maximo_len:
-        es_valida = True
-    return es_valida
-
-
-def ingresar_nombre_usuario(mensaje:str, mensaje_error:str, minimo_len:int, maximo_len:int, reintentos:int)->str:
-    cadena = input(mensaje)
-    if type(cadena) == str:
-        cadena_validada = validar_longitud(cadena,minimo_len,maximo_len)
-        if cadena_validada == True:
-            cadena_validada = cadena
-            print("Nombre de usuario ingresado correctamente")
-        else:
-            print(f"{mensaje_error}, quedan {reintentos} reintentos")
-            if reintentos > 0:
-                cadena_validada = ingresar_nombre_usuario(mensaje, mensaje_error, minimo_len, maximo_len, reintentos - 1)
-
-    return cadena_validada
-
-
-def mostrar_palabra_oculta(palabra, letras_correctas):
-    palabra_oculta = []
-    for letra in palabra:
-        if letra in letras_correctas:
-            palabra_oculta.append(letra)
-        else:
-            palabra_oculta.append("_")
-
-    for caracter in palabra_oculta:
-        print(caracter, end=" ")
-    print()
-
-    return palabra_oculta
-
-
-def actualizar_palabra_oculta(palabra, palabra_oculta, letra):
-    aciertos = 0
-    fallos = 0
-
-    for i in range (len(palabra)):
-        if palabra[i] == letra:
-            palabra_oculta[i] = letra
-            aciertos += 1
-
-    if aciertos == 0:
-        fallos = 1
-
-    return palabra_oculta, aciertos, fallos
-
-
-def calcular_puntuacion_parcial(aciertos, fallos): 
-    #calculará y actualizará el puntaje basado en los puntajes parciales de cada partida. 
-    cantidad_puntos = (aciertos * 3) - fallos
-
-    print(f"Puntos Obtenidos: {cantidad_puntos}")
-    return cantidad_puntos
-
-
-def verificar_estado_juego(diccionario_juego:dict)->bool:
-    palabra = diccionario_juego["palabra"]
-    letras_correctas = diccionario_juego["letras_correctas"]
-    jugador_estado = True
-
-    if all(letra in letras_correctas for letra in palabra):
-        print(f"¡Ganaste! La palabra era: {palabra}")
-        jugador_estado =  False
-    elif diccionario_juego["intentos_restantes"] <= 0:
-        print(f"Te quedaste sin intentos. La palabra era: {palabra}")
-        jugador_estado = False
-    
-    return jugador_estado
-
-
-def calcular_puntuacion_final(puntaje_final, aciertos, fallos):
-    return puntaje_final + calcular_puntuacion_parcial(aciertos, fallos)
-
-
-def guardar_puntuacion(nombre, puntaje_final) -> bool:
-    # Ejemplo simple (puedes guardar en archivo más adelante)
-    print(f"\n Puntuación de {nombre}: {puntaje_final} puntos guardada correctamente.")
-
-    return True
-
-
-
-
-def jugar_ahorcado()->None:
-    #Arranca el juego
-    #Aca creamos todas las variables temporales que necesite nuestro juego
-    palabra = seleccionar_palabra(diccionario)
-    letras_correctas = []
-    letras_usadas = []
-    intentos_restantes = 7
-    puntaje = 0
-
-    print("\n--- 🎮 BIENVENIDO AL JUEGO DEL AHORCADO ---\n")
-    nombre = ingresar_nombre_usuario("Ingresa tu nombre: ", "Nombre inválido", 3, 12, 3)
-    print(f"\nHola, {nombre}. ¡Adivina la palabra!")
-
-    diccionario_juego = {
-    "palabra": palabra,
-    "letras_correctas": [],
-    "estado": True,
-    "intentos_restantes": 7
-    }
-    
-    while verificar_estado_juego(diccionario_juego):
-        #Jugamos
-        #Verificamos si la partida sigue o no
-        palabra_oculta = mostrar_palabra_oculta(palabra, letras_correctas)
-
-        #convertir en funcion ingresar_letra_valida?
-        letra = input("\nIngresa una letra: ")
-        
-        palabra_oculta, aciertos, fallos = actualizar_palabra_oculta(palabra, palabra_oculta, letra)
-
-        if aciertos > 0 and letra not in letras_correctas:
-            letras_correctas.append(letra)
-            diccionario_juego["letras_correctas"] = letras_correctas
-            print(f"Acierto con '{letra}'!")
-        else:
-            diccionario_juego["intentos_restantes"] -= 1
-            print(f"Fallo. Te quedan {diccionario_juego['intentos_restantes']} intentos.")
-
-        puntaje = calcular_puntuacion_final(puntaje, aciertos, fallos)
-
-        if not verificar_estado_juego(diccionario_juego):
-            break
-
-    #Pido el nombre del jugador para guardar la puntuación
-    #puntuacion_final
-    guardar_puntuacion(nombre, puntaje)
-
-jugar_ahorcado()
 
