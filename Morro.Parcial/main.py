@@ -118,10 +118,13 @@ def login(usuarios):
         return None
 
 
-def jugar_partida_nivel(palabras):
+def jugar_partida_nivel(palabras, categoria):
     palabras_ocultas = ["_" * len(p) for p in palabras]
     intentos = 7
     puntaje = 0
+    
+    letras_desordenadas = desordenar_cadena(categoria)
+    print(f"Letras desordenadas: {letras_desordenadas}\n")
 
     print("Debes adivinar TODAS las palabras del nivel.")
     mostrar_todas(palabras_ocultas)
@@ -155,23 +158,36 @@ def jugar_partida_nivel(palabras):
     return False, puntaje
 
 
-
-def jugar_nivel(nivel, puntaje, reinicios_restantes):
+def jugar_nivel(nivel, puntaje):
     print(f"\n=== NIVEL {nivel} ===")
 
-    categoria = list(diccionario2.keys())[nivel - 1]        #CAMBIAR
-    palabras = diccionario2[categoria]
+    categorias = list(diccionario2.keys())   
 
-    exito, puntos = jugar_partida_nivel(palabras)
+    partidas_ganadas = 0
 
-    puntaje += puntos
+    for ronda in range(1, 4):  # 3 partidas
+        print(f"\n--- Partida {ronda} del Nivel {nivel} ---")
 
-    if not exito:
-        print("Nivel fallado.")
+        
+        categoria = categorias[(nivel - 1) * 3 + (ronda - 1)]   #cambiar de lista
+        palabras = diccionario2[categoria]
 
-    print(f"Puntaje acumulado: {puntaje}")
+        exito, puntos = jugar_partida_nivel(palabras, categoria)
+        puntaje += puntos
 
-    return puntaje, 0, exito, reinicios_restantes
+        if exito:
+            partidas_ganadas += 1
+
+        print(f"Puntaje acumulado: {puntaje}")
+
+    if partidas_ganadas == 3:
+        print(f"🏆 ¡Nivel {nivel} superado! Ganaste las 3 partidas.")
+        nivel_superado = True
+    else:
+        print(f"❌ Nivel {nivel} fallado. Ganaste {partidas_ganadas} de 3 partidas.")
+        nivel_superado = False
+
+    return puntaje, nivel_superado
 
 
 nivel = 2
@@ -180,12 +196,16 @@ reinicios_restantes = 5
 
 
 def jugar_encontrar_palabra():
-    i = 1
     puntaje = 0
-    reinicios_restantes = 5
-    while i < 2:
-        jugar_nivel(i, puntaje, reinicios_restantes)
-        i += 1
+
+    for nivel in range(1, 6):  # 5 niveles
+        puntaje, exito = jugar_nivel(nivel, puntaje)
+
+        if not exito:
+            print("\n Juego terminado. No superaste el nivel.")
+            break
+
+    print(f"\nPuntaje final: {puntaje}")
 
 
 def main():
