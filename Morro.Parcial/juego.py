@@ -57,59 +57,23 @@ max_intentos = 7
     return puntaje, errores, exito, reinicios_restantes'''
 
 
-def jugar_partida_nivel(palabras):
-    palabras_ocultas = ["_" * len(p) for p in palabras]
-    intentos = 7
-    puntaje = 0
+#Shuffle: modifica el orden de las letras
+#Clear: borra las letras seleccionadas por el jugador
+#Submit: ingresa la palabra seleccionada por el jugador.
 
-    print("Debes adivinar TODAS las palabras del nivel.")
-    mostrar_todas(palabras_ocultas)
+def hacer_shuffle(categoria):
+    nuevo_orden = desordenar_cadena(categoria)
+    return nuevo_orden
 
-    while intentos > 0:
-        palabra_ingresada = input("Ingresa una palabra: ")
-        palabra_ingresada = convertir_a_minuscula(palabra_ingresada)
+palabra_formada = "banco"
+def hacer_clear(palabra_formada):
+    nueva = ""
+    if palabra_formada == "":
+        print("Error..., No hay letras ingresadas.")
+    for i in range(len(palabra_formada)-1):
+        nueva += palabra_formada[i]
+    return nueva
 
-        palabras_ocultas, puntos, errores = procesar_palabra_ingresada(
-            palabra_ingresada,
-            palabras,
-            palabras_ocultas
-        )
-
-        puntaje += puntos
-        intentos -= errores
-
-        mostrar_todas(palabras_ocultas)
-
-        # verificar si ganó → todas reveladas
-        todas = True
-        for i in range(len(palabras)):
-            if palabras_ocultas[i] != palabras[i]:
-                todas = False
-                break
-
-        if todas:
-            print("🎉 ¡Ganaste el nivel! Adivinaste todas las palabras.")
-            return True, puntaje
-
-    print("💀 Te quedaste sin intentos.")
-    return False, puntaje
-
-
-
-def jugar_nivel(nivel, puntaje, reinicios_restantes):
-    print(f"\n=== NIVEL {nivel} ===")
-
-    # obtener palabras del nivel
-    categoria = list(diccionario2.keys())[nivel - 1]        #CAMBIAR
-    palabras = diccionario2[categoria]
-
-    exito, puntos = jugar_partida_nivel(palabras)
-
-    puntaje += puntos
-
-    if not exito:
-        print("Nivel fallado.")
-
-    print(f"Puntaje acumulado: {puntaje}")
-
-    return puntaje, 0, exito, reinicios_restantes
+def hacer_submit(palabra_formada):
+    print(palabra_formada)
+    return palabra_formada
