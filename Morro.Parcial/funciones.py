@@ -411,9 +411,3 @@ def mostrar_todas(palabras_ocultas):
     for palabra in palabras_ocultas:
         print(palabra)
 
-
-def actualizar_usuario(usuarios, usuario_actual):
-    indice = buscar_usuario(usuarios, usuario_actual["usuario"])
-    if indice != -1:
-        usuarios[indice] = usuario_actual
-        guardar_usuarios(usuarios)

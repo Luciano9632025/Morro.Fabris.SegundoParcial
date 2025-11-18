@@ -66,7 +66,8 @@ def jugar_partida_nivel(palabras):
     mostrar_todas(palabras_ocultas)
 
     while intentos > 0:
-        palabra_ingresada = input("Ingresa una palabra: ").lower()
+        palabra_ingresada = input("Ingresa una palabra: ")
+        palabra_ingresada = convertir_a_minuscula(palabra_ingresada)
 
         palabras_ocultas, puntos, errores = procesar_palabra_ingresada(
             palabra_ingresada,

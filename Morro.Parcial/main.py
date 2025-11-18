@@ -52,10 +52,54 @@ from diccionario import *
 from funciones import *
 from datos import *
 from usuarios import *
-from juego import *
 
 
 
+
+
+
+'''def jugar_partida(puntaje, reinicios_restantes, palabras):
+    palabra, letras_correctas, palabra_oculta, lista_palabras, intentos_restantes, categoria = iniciar_partida(diccionario2, max_intentos)
+    errores = 0
+    exito = False  
+
+    while True:
+        estado = verificar_partida(palabra_oculta, intentos_restantes, palabra)
+
+        if estado == "ganada":
+            exito = True
+            break
+
+        elif estado == "perdida":
+            if reinicios_restantes > 0:
+                print(f"Reiniciando partida. Reinicios restantes: {reinicios_restantes - 1}")
+                reinicios_restantes -= 1
+                palabra, letras_correctas, palabra_oculta, lista_palabras, intentos_restantes, categoria = iniciar_partida(diccionario2, max_intentos)
+                continue
+            else:
+                print("Sin reinicios disponibles.")
+                exito = False
+                break
+
+        letra = input("Ingrese UNA letra (o 'comodin'): ")
+        letra = convertir_a_minuscula(letra)
+
+        if len(letra) != 1:
+            print("Debe ingresar solo UNA letra.")
+            continue
+
+        aciertos, fallos = procesar_letra_ingresada(letra, palabra, letras_correctas)
+
+        # actualizar palabra oculta solo para esta palabra
+        palabra_oculta, _, _ = actualizar_palabra_oculta(palabra, palabra_oculta, letra)
+
+        intentos_restantes -= fallos
+        puntaje += aciertos * 2  # ejemplo
+
+        mostrar_palabra_oculta(palabra, letras_correctas)
+        print(f"Intentos restantes: {intentos_restantes}")
+
+    return puntaje, errores, exito, reinicios_restantes'''
         
 def login(usuarios):
     nombre = input("Usuario: ")
@@ -74,6 +118,67 @@ def login(usuarios):
         return None
 
 
+def jugar_partida_nivel(palabras):
+    palabras_ocultas = ["_" * len(p) for p in palabras]
+    intentos = 7
+    puntaje = 0
+
+    print("Debes adivinar TODAS las palabras del nivel.")
+    mostrar_todas(palabras_ocultas)
+
+    while intentos > 0:
+        palabra_ingresada = input("Ingresa una palabra: ")
+        palabra_ingresada = convertir_a_minuscula(palabra_ingresada)
+
+        palabras_ocultas, puntos, errores = procesar_palabra_ingresada(
+            palabra_ingresada,
+            palabras,
+            palabras_ocultas
+        )
+
+        puntaje += puntos
+        intentos -= errores
+
+        mostrar_todas(palabras_ocultas)
+
+        todas = True
+        for i in range(len(palabras)):
+            if palabras_ocultas[i] != palabras[i]:
+                todas = False
+                break
+
+        if todas:
+            print("🎉 ¡Ganaste el nivel! Adivinaste todas las palabras.")
+            return True, puntaje
+
+    print("💀 Te quedaste sin intentos.")
+    return False, puntaje
+
+
+
+def jugar_nivel(nivel, puntaje, reinicios_restantes):
+    print(f"\n=== NIVEL {nivel} ===")
+
+    categoria = list(diccionario2.keys())[nivel - 1]        #CAMBIAR
+    palabras = diccionario2[categoria]
+
+    exito, puntos = jugar_partida_nivel(palabras)
+
+    puntaje += puntos
+
+    if not exito:
+        print("Nivel fallado.")
+
+    print(f"Puntaje acumulado: {puntaje}")
+
+    return puntaje, 0, exito, reinicios_restantes
+
+
+nivel = 2
+puntaje = 0
+reinicios_restantes = 5
+
+
 def jugar_encontrar_palabra():
     i = 1
     puntaje = 0
@@ -83,7 +188,40 @@ def jugar_encontrar_palabra():
         i += 1
 
 
-jugar_encontrar_palabra()
+def main():
+    usuarios = cargar_usuarios()
+
+    print("=== MENÚ PRINCIPAL ===")
+    print("1. Iniciar sesión")
+    print("2. Registrarse")
+    opcion = input("Elige una opción: ")
+
+    usuario = None
+
+    if opcion == "1":
+        usuario = login(usuarios)
+        if usuario is None:
+            return
+    elif opcion == "2":
+        nombre = input("Nuevo usuario: ")
+        contraseña = input("Contraseña: ")
+        if registrar_usuario(usuarios, nombre, contraseña):
+            print("Usuario registrado correctamente. Inicia sesión ahora.")
+            return
+        else:
+            print("Ese usuario ya existe.")
+            return
+    else:
+        print("Opción inválida")
+        return
+
+    print(f"\nBienvenido, {usuario['nombre']}!")
+    print("Iniciando partida...\n")
+
+    jugar_encontrar_palabra()  
+
+
+main()
 
 
 
