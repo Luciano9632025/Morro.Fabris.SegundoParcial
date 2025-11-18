@@ -30,8 +30,6 @@ while usuario_actual is None:
         # Lógica de registrar
         pass
 
-# Jugar
-jugar(usuario_actual)
 
 # Actualizar estadísticas
 actualizar_usuario(usuarios, usuario_actual)
