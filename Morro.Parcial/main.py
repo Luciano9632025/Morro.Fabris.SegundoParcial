@@ -48,13 +48,12 @@ Si el jugador logra completar los 5 niveles, el juego mostrará un mensaje de vi
 '''
 
 import random
-from diccionario import *
+#from diccionario import *
 from funciones import *
 from datos import *
 from usuarios import *
-
-
-
+from juego import *
+from partidas import *
 
 
 
@@ -118,11 +117,15 @@ def login(usuarios):
         return None
 
 
+#diccionario2 = cargar_diccionario_desde_csv("partidas.csv")
+print(diccionario2)
+
 def jugar_partida_nivel(palabras, categoria):
     palabras_ocultas = ["_" * len(p) for p in palabras]
     intentos = 7
     puntaje = 0
-    
+    palabra_ingresada = ""
+
     letras_desordenadas = desordenar_cadena(categoria)
     print(f"Letras desordenadas: {letras_desordenadas}\n")
 
@@ -130,32 +133,87 @@ def jugar_partida_nivel(palabras, categoria):
     mostrar_todas(palabras_ocultas)
 
     while intentos > 0:
-        palabra_ingresada = input("Ingresa una palabra: ")
-        palabra_ingresada = convertir_a_minuscula(palabra_ingresada)
+        print(f"\nPalabra formada: {palabra_ingresada}")
+        opcion = input("1. Ingresar letra\n2. Confirmar palabra\n3. Borrar letras\n4. Reordenar letras\n5. Usar comodín\nOpción: ")
+        
+        if opcion == "1":
+            seguir = "si"
+            while seguir != "no":
+                letra = formar_palabra()
+                palabra_ingresada += letra
+                palabra_ingresada = convertir_a_minuscula(palabra_ingresada)
+                print(f"\nPalabra formada: {palabra_ingresada}")
+                seguir = input("Seguir añadiendo letras? si/no")
+            continue
+        
+        elif opcion == "2":
+            palabra_ingresada = convertir_a_minuscula(palabra_ingresada)
+            palabras_ocultas, puntos, errores = hacer_submit(
+                palabra_ingresada,
+                palabras,
+                palabras_ocultas
+            )
 
-        palabras_ocultas, puntos, errores = procesar_palabra_ingresada(
-            palabra_ingresada,
-            palabras,
-            palabras_ocultas
-        )
+            puntaje += puntos
+            intentos -= errores
 
-        puntaje += puntos
-        intentos -= errores
+            palabra_ingresada = ""
+            mostrar_todas(palabras_ocultas)
 
-        mostrar_todas(palabras_ocultas)
+            todas = True
+            for i in range(len(palabras)):
+                if palabras_ocultas[i] != palabras[i]:
+                    todas = False
+                    break
 
-        todas = True
-        for i in range(len(palabras)):
-            if palabras_ocultas[i] != palabras[i]:
-                todas = False
-                break
+            if todas:
+                print("🎉 ¡Ganaste el nivel! Adivinaste todas las palabras.")
+                return True, puntaje
+            
+            continue
 
-        if todas:
-            print("🎉 ¡Ganaste el nivel! Adivinaste todas las palabras.")
-            return True, puntaje
+        elif opcion == "3":
+            palabra_ingresada = hacer_clear(palabra_ingresada)
+            continue
+
+        # Opción 4: reordenar letras de la categoría
+        elif opcion == "4":
+            print("Letras desordenadas:", hacer_shuffle(categoria))
+            continue
+
+        # Opción 5: comodín (tu lógica)
+        elif opcion == "5":
+            opcion2 = input("1. Mostrar Palabra parcialmente\n2. Descubrir letra aleatoria\n3. ???\nOpción de comodín: ")
+
+            if opcion2 == "1":
+                palabras_ocultas = revelar_parcialmente_palabra(palabras, palabras_ocultas)
+                mostrar_todas(palabras_ocultas)
+            elif opcion2 == "2":
+                palabras_ocultas = ubicar_letra_en_palabras(palabras, palabras_ocultas, categoria)
+                mostrar_todas(palabras_ocultas)
+            elif opcion2 == "3":
+                pass
+            else:
+                print("❌ Opción inválida.")
+                continue
+            print("🎲 Comodín usado")
+            continue
+
+        else:
+            print("❌ Opción inválida.")
+            continue
 
     print("💀 Te quedaste sin intentos.")
     return False, puntaje
+
+def formar_palabra():
+    letra_ingresada = input("Ingrese una letra: ")
+    letra_ingresada = convertir_a_minuscula(letra_ingresada)
+    if len(letra_ingresada) > 1:
+        letra_ingresada = input("Error... Ingrese UNA letra: ")
+        letra_ingresada = convertir_a_minuscula(letra_ingresada)
+    return letra_ingresada
+
 
 
 def jugar_nivel(nivel, puntaje):
